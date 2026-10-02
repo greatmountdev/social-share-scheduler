@@ -1,0 +1,1076 @@
+export type PlatformId = 
+  | 'facebook_page' 
+  | 'facebook_profile'
+  | 'instagram' 
+  | 'tiktok' 
+  | 'youtube' 
+  | 'twitter' 
+  | 'threads'
+  | 'facebook'; // backwards-compatible alias
+
+export type PostStatus = 
+  | 'READY' 
+  | 'COPIED'
+  | 'OPENED' 
+  | 'SHARED' 
+  | 'COMPLETED'
+  | 'SKIPPED'
+  | 'FAILED';
+
+export type FacebookContentType = 'post' | 'reel';
+
+export type ShareDestinationStatus = 
+  | 'Ready'
+  | 'Sharing'
+  | 'Waiting for user'
+  | 'Completed'
+  | 'Skipped'
+  | 'Error';
+
+export type DestinationContentType = 
+  | 'post' 
+  | 'reel' 
+  | 'video' 
+  | 'short' 
+  | 'tweet' 
+  | 'thread'
+  | 'message';
+
+export interface ShareSessionDestination {
+  id: string; // unique destination account id or platformId
+  platformId: PlatformId;
+  name: string;
+  accountName?: string;
+  accountIdentifier?: string;
+  url?: string;
+  contentType: DestinationContentType;
+  status: ShareDestinationStatus;
+  statusNote?: string;
+  completedAt?: string;
+  copiedCaption?: boolean;
+  openedPlatform?: boolean;
+  captionPayload?: string;
+}
+
+export interface ShareSession {
+  id: string;
+  postId: string;
+  post: SocialPost;
+  startedAt: string;
+  updatedAt: string;
+  currentDestinationIndex: number;
+  destinations: ShareSessionDestination[];
+  isComplete: boolean;
+  isPaused?: boolean;
+  isFromDraft?: boolean;
+  groupId?: string | null;
+  groupName?: string | null;
+}
+
+export interface PlatformConfig {
+  id: PlatformId;
+  name: string;
+  badge: string;
+  color: string;
+  bgColor: string;
+  accentColor: string;
+  iconName: string;
+  supportsImage: boolean;
+  supportsVideo: boolean;
+  maxHashtags: number;
+  playStoreUrl: string;
+  packageName: string;
+  deepLinkScheme: string;
+  webShareUrl?: (text: string, mediaUrl?: string) => string;
+  apiPublishSupported: boolean;
+  defaultStatus: 'Connected' | 'Not Connected' | 'Authorization Required' | 'Unavailable' | 'Manual Share' | 'Ready for Manual Share';
+}
+
+export interface MediaItem {
+  id: string;
+  type: 'image' | 'video';
+  name: string;
+  url: string;
+  thumbnailUrl?: string;
+  sizeBytes?: number;
+  durationSeconds?: number;
+  width?: number;
+  height?: number;
+  source?: 'local' | 'drive' | 'sample';
+}
+
+export interface PlatformCustomContent {
+  title?: string;
+  caption?: string;
+  description?: string;
+  hook?: string;
+  opening?: string;
+  tags?: string[];
+  hashtags?: string[];
+  callToAction?: string;
+  contentType?: 'post' | 'reel';
+}
+
+export interface SocialPost {
+  id: string;
+  title: string;
+  caption: string;
+  description: string;
+  hashtags: string[];
+  callToAction?: string;
+  media?: MediaItem | null;
+  selectedPlatforms: PlatformId[];
+  selectedDestinationIds?: string[];
+  selectedGroupId?: string | null;
+  facebookPageContentType?: FacebookContentType;
+  facebookProfileContentType?: FacebookContentType;
+  destinationContentTypes?: Record<string, FacebookContentType>;
+  platformOverrides?: Partial<Record<PlatformId, PlatformCustomContent>>;
+  createdAt: string;
+  scheduledAt?: string | null;
+  platformStatuses: Record<string, {
+    status: PostStatus;
+    note?: string;
+    updatedAt: string;
+  }>;
+  isDraft?: boolean;
+  newsSourceInfo?: {
+    sourceName: string;
+    articleTitle: string;
+    articleUrl: string;
+    media?: NewsMediaItem | { id?: string; type: any; url: string; sourceName?: string; sourceUrl?: string; status?: any } | null;
+    publishedAt?: string;
+    category?: string;
+    hypeScore?: number;
+    summary?: string;
+    mediaSource?: string;
+    generatedTitles?: TitleOption[];
+    generatedDescriptions?: {
+      short?: string;
+      medium?: string;
+      social?: string;
+    };
+    factStatus?: 'confirmed' | 'developing' | 'differing' | 'verified';
+    factNotice?: string;
+    includeSourceNameInCaption?: boolean;
+    includeArticleLinkInCaption?: boolean;
+  };
+}
+
+export interface SocialAccountStatus {
+  platformId: PlatformId;
+  status: 'Connected' | 'Not Connected' | 'Authorization Required' | 'Unavailable';
+  accountName?: string;
+  connectedAt?: string;
+  avatarUrl?: string;
+}
+
+export interface ContentSettings {
+  defaultContentType: 'post' | 'reel' | 'video' | 'shorts';
+  hashtagLimits: {
+    facebook: number;
+    instagram: number;
+    tiktok: number;
+    youtube: number;
+    twitter: number;
+    threads?: number;
+  };
+}
+
+export interface NewsHunterGlobalSettings {
+  newsRegionMode?: 'auto' | 'manual';
+  manualCountryCode?: string;
+  supplementWithGlobal?: boolean;
+  rewriteLanguage?: string;
+  defaultCategories: string[];
+  defaultHypeFilter: 'all' | '50' | '70' | '85';
+  defaultMediaFilter: 'all' | 'images' | 'videos' | 'none' | 'downloadable';
+  defaultSorting: 'hype' | 'newest' | 'sources';
+  autoHuntOnStartup: boolean;
+}
+
+export interface AiControlSettings {
+  assistantEnabled: boolean;
+  aiRewriteEnabled: boolean;
+  newsRewriteEnabled: boolean;
+  writingLanguage: 'id' | 'en';
+  writingStyle: 'Natural' | 'Informative' | 'Casual' | 'News' | 'Social Media';
+}
+
+export interface SchedulingControlSettings {
+  defaultTimezone: string;
+  defaultPriority: 'normal' | 'high' | 'low';
+  reminderMinutesBefore: 5 | 10 | 15 | 30 | 60 | number;
+}
+
+export interface SharingControlSettings {
+  confirmBeforeOpen: boolean;
+  confirmCompletionAfterOpen: boolean;
+  defaultPlatformOrder: PlatformId[];
+}
+
+export interface MediaControlSettings {
+  autoPreviewMedia: boolean;
+  preferDownloadable: boolean;
+  maxPreviewSize: 'small' | 'medium' | 'large';
+}
+
+export interface NotificationControlSettings {
+  masterEnabled: boolean;
+  queueReminders: boolean;
+  newsHunterAlerts: boolean;
+  shareSessionReminders: boolean;
+}
+
+export type MediaCacheRetentionDays = 1 | 3 | 7 | 30 | 0; // 0 = never automatically delete
+export type HistoryRetentionDays = 7 | 30 | 90 | 180 | 365 | 0; // 0 = never automatically delete
+
+export interface StorageCacheSettings {
+  autoMediaCleanupEnabled: boolean;
+  mediaRetentionDays: MediaCacheRetentionDays;
+  autoHistoryCleanupEnabled: boolean;
+  historyRetentionDays: HistoryRetentionDays;
+  cleanupTimeUtc: string; // Default: '00:00' (UTC)
+  lastAutomaticCleanupUtc?: string | null;
+}
+
+export type LanguageMode = 'automatic' | 'manual';
+
+export interface AppSettings {
+  language: string; // Effective active UI language code (e.g. 'en', 'id', 'ja', etc.)
+  languageMode?: LanguageMode; // 'automatic' (detect browser) or 'manual' (explicit choice)
+  selectedLanguage?: string; // Stored user selection when in manual mode
+  timezone: string;
+  notificationEnabled: boolean;
+  isExpoGoMode: boolean; // Expo Go compatibility flag
+  hasDevBuild: boolean;
+  defaultHashtags: string[];
+  theme: 'dark' | 'light' | 'lollipop' | 'system';
+
+  // Global App Settings & Control Center Extensions
+  appName?: string;
+  defaultLandingPage?: 'home' | 'news' | 'create';
+  contentSettings?: ContentSettings;
+  newsHunterSettings?: NewsHunterGlobalSettings;
+  aiSettings?: AiControlSettings;
+  schedulingSettings?: SchedulingControlSettings;
+  sharingSettings?: SharingControlSettings;
+  mediaSettings?: MediaControlSettings;
+  notificationControlSettings?: NotificationControlSettings;
+  storageCacheSettings?: StorageCacheSettings;
+}
+
+export interface GoogleDriveFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  thumbnailLink?: string;
+  webViewLink?: string;
+  webContentLink?: string;
+  size?: string;
+}
+
+// Platform Account Items for Multiple Accounts Support
+export type AccountConnectionStatus =
+  | 'Not Connected'
+  | 'Ready for Manual Share'
+  | 'Saved Profile Link'
+  | 'Manual Share'
+  | 'Connected';
+
+export interface AccountBaseMetadata {
+  notes?: string;
+  enabled?: boolean;
+  connectionStatus?: AccountConnectionStatus;
+  isExamplePlaceholder?: boolean;
+}
+
+export interface FacebookPageAccount extends AccountBaseMetadata {
+  id: string;
+  pageName: string;
+  pageUrl: string;
+  pageId?: string;
+}
+
+export interface FacebookProfileAccount extends AccountBaseMetadata {
+  id: string;
+  profileName: string;
+  profileUrl: string;
+  profileId?: string;
+}
+
+export interface InstagramAccount extends AccountBaseMetadata {
+  id: string;
+  displayName?: string;
+  username: string;
+  profileUrl: string;
+}
+
+export interface TikTokAccount extends AccountBaseMetadata {
+  id: string;
+  displayName?: string;
+  username: string;
+  profileUrl: string;
+}
+
+export interface YouTubeChannelAccount extends AccountBaseMetadata {
+  id: string;
+  channelName: string;
+  channelId?: string;
+  channelUrl: string;
+}
+
+export interface TwitterAccount extends AccountBaseMetadata {
+  id: string;
+  displayName?: string;
+  username: string;
+  profileUrl: string;
+}
+
+export interface ThreadsAccount extends AccountBaseMetadata {
+  id: string;
+  displayName?: string;
+  username: string;
+  profileUrl: string;
+}
+
+export interface UserSocialAccounts {
+  facebook_page: FacebookPageAccount[];
+  facebook_profile: FacebookProfileAccount[];
+  instagram: InstagramAccount[];
+  tiktok: TikTokAccount[];
+  youtube: YouTubeChannelAccount[];
+  twitter: TwitterAccount[];
+  threads: ThreadsAccount[];
+}
+
+export interface SocialAccountDestination {
+  id: string;
+  platformId: PlatformId;
+  name: string;
+  identifier?: string;
+  url?: string;
+  secondaryInfo?: string;
+  notes?: string;
+  enabled?: boolean;
+  connectionStatus?: AccountConnectionStatus;
+  isExamplePlaceholder?: boolean;
+  isConfigured?: boolean;
+}
+
+/**
+ * Editable sample/example accounts displayed initially.
+ * Sample URLs are empty strings so the input fields display platform-specific placeholder text
+ * rather than locked values.
+ */
+export const DEFAULT_USER_ACCOUNTS: UserSocialAccounts = {
+  facebook_page: [
+    {
+      id: 'fb-page-1',
+      pageName: 'Example Facebook Page',
+      pageUrl: '',
+      enabled: true,
+      connectionStatus: 'Ready for Manual Share',
+      isExamplePlaceholder: true
+    }
+  ],
+  facebook_profile: [
+    {
+      id: 'fb-prof-1',
+      profileName: 'Example Facebook Profile',
+      profileUrl: '',
+      enabled: true,
+      connectionStatus: 'Ready for Manual Share',
+      isExamplePlaceholder: true
+    }
+  ],
+  instagram: [
+    {
+      id: 'ig-acc-1',
+      displayName: 'Example Instagram Account',
+      username: '',
+      profileUrl: '',
+      enabled: true,
+      connectionStatus: 'Ready for Manual Share',
+      isExamplePlaceholder: true
+    }
+  ],
+  tiktok: [
+    {
+      id: 'tt-acc-1',
+      displayName: 'Example TikTok Account',
+      username: '',
+      profileUrl: '',
+      enabled: true,
+      connectionStatus: 'Ready for Manual Share',
+      isExamplePlaceholder: true
+    }
+  ],
+  youtube: [
+    {
+      id: 'yt-channel-1',
+      channelName: 'Example YouTube Channel',
+      channelId: '',
+      channelUrl: '',
+      enabled: true,
+      connectionStatus: 'Ready for Manual Share',
+      isExamplePlaceholder: true
+    }
+  ],
+  twitter: [
+    {
+      id: 'x-acc-1',
+      displayName: 'Example X Account',
+      username: '',
+      profileUrl: '',
+      enabled: true,
+      connectionStatus: 'Ready for Manual Share',
+      isExamplePlaceholder: true
+    }
+  ],
+  threads: [
+    {
+      id: 'th-acc-1',
+      displayName: 'Example Threads Account',
+      username: '',
+      profileUrl: '',
+      enabled: true,
+      connectionStatus: 'Ready for Manual Share',
+      isExamplePlaceholder: true
+    }
+  ]
+};
+
+export interface SocialGroup {
+  id: string;
+  name: string;
+  description?: string;
+  destinationIds: string[];
+  platforms?: PlatformId[];
+  accountIds?: string[];
+  isExamplePlaceholder?: boolean;
+  isUserCreated?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export const DEFAULT_SOCIAL_GROUPS: SocialGroup[] = [];
+
+// ==========================================
+// NEWS HUNTER INTERFACES & TYPES
+// ==========================================
+
+export type NewsCategory = 
+  | 'All Categories'
+  | 'Hype / Viral' 
+  | 'Nasional' 
+  | 'Internasional' 
+  | 'Sepakbola' 
+  | 'Persib' 
+  | 'Teknologi' 
+  | 'Ekonomi' 
+  | 'Lifestyle' 
+  | 'Adventure' 
+  | 'Custom';
+
+export type NewsSourceType = 'RSS' | 'WEB' | 'X';
+export type NewsMediaType = 'image' | 'video' | 'none';
+export type NewsMediaStatus = 'downloadable' | 'preview_only' | 'source_only' | 'no_media';
+
+export interface NewsMediaItem {
+  url: string;
+  type: NewsMediaType;
+  sourceUrl: string;
+  sourceName: string;
+  title?: string;
+  width?: number;
+  height?: number;
+  sizeBytes?: number;
+  mimeType?: string;
+  durationSeconds?: number;
+  thumbnailUrl?: string;
+  status: NewsMediaStatus;
+  isDownloadable?: boolean;
+  aspectRatio?: string;
+}
+
+export interface NewsRssSource {
+  id: string;
+  countryCode?: string; // 'ID', 'US', 'GB', 'JP', 'GLOBAL', etc.
+  language?: string; // 'id', 'en', 'ja', 'de', 'fr', 'es', etc.
+  name: string;
+  url: string;
+  category: string;
+  active: boolean;
+  priority: 'high' | 'medium' | 'low';
+  isGlobal?: boolean;
+  lastTested?: string;
+  lastStatus?: 'ok' | 'error' | 'untested';
+  errorMessage?: string;
+  itemCount?: number;
+}
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  url: string;
+  source: string;
+  sourceId?: string;
+  countryCode?: string;
+  countryName?: string;
+  sourceLanguage?: string;
+  publishedAt: string;
+  summary: string;
+  imageUrl?: string | null;
+  media?: NewsMediaItem | null;
+  category: string;
+  sourceType: NewsSourceType;
+  discoveredAt: string;
+  hypeScore: number;
+  hypeSignals?: {
+    sourceCount: number;
+    freshnessScore: number;
+    relevanceScore: number;
+    keywordScore: number;
+  };
+  clusterId?: string;
+}
+
+export interface NewsCluster {
+  id: string;
+  mainTopic: string;
+  articles: NewsArticle[];
+  sourcesCount: number;
+  representativeArticle: NewsArticle;
+  averageHypeScore: number;
+  factStatus: 'confirmed' | 'developing' | 'differing';
+  differingSummary?: string;
+}
+
+export interface TitleOption {
+  type: 'informative' | 'curiosity' | 'short_viral' | 'seo' | string;
+  label?: string;
+  title: string;
+}
+
+export type NewsTitleOption = TitleOption;
+
+export interface NewsAiRewrite {
+  selectedTitle: string;
+  titleOptions: TitleOption[];
+  shortDescription: string;
+  factStatus: 'confirmed' | 'developing' | 'differing';
+  factNotice?: string;
+  facebookCaption: string;
+  instagramCaption: string;
+  tiktokHook: string;
+  tiktokCaption: string;
+  youtubeTitle: string;
+  youtubeDescription: string;
+  xPost: string;
+  threadsPost?: string;
+  hashtags: {
+    facebook: string[];
+    instagram: string[];
+    tiktok: string[];
+    youtube: string[];
+    x: string[];
+    threads?: string[];
+  };
+}
+
+export interface SavedNewsItem {
+  id: string;
+  title: string;
+  url: string;
+  source: string;
+  category: string;
+  countryCode?: string;
+  countryName?: string;
+  sourceLanguage?: string;
+  savedAt: string;
+  publishedAt: string;
+  imageUrl?: string | null;
+  media?: NewsMediaItem | null;
+  summary: string;
+  rewrite?: NewsAiRewrite | null;
+  selectedPlatforms?: PlatformId[];
+}
+
+export interface NewsHunterSettings {
+  newsRegionMode?: 'auto' | 'manual';
+  manualCountryCode?: string;
+  supplementWithGlobal?: boolean;
+  rewriteLanguage?: string;
+  defaultCategory: string;
+  discoveryMode: 'rss_only' | 'rss_web';
+  xTrendingEnabled: boolean;
+  defaultHypeThreshold: number;
+  refreshIntervalMinutes: number;
+  xApiKeyConfigured?: boolean;
+  mediaDownloadLimitMb: number; // 10, 25 (default), 50, 100, or 0 (unlimited)
+  mediaFilter?: 'all' | 'image' | 'video' | 'none';
+  onlyDownloadableMedia?: boolean;
+}
+
+export type AutoHuntInterval = '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
+export type AutoHuntStatus = 'off' | 'on' | 'paused';
+export type HypeThresholdOption = 'any' | '50' | '70' | '85';
+
+export interface AutoHuntResult {
+  lastHuntTime: string;
+  sourcesChecked: number;
+  newStoriesCount: number;
+  updatedClustersCount: number;
+  duplicatesIgnoredCount: number;
+  errorsCount: number;
+  errorDetails?: { sourceName: string; error: string; timestamp: string }[];
+}
+
+export interface DiscoveredStoryRecord {
+  fingerprint: string;
+  url: string;
+  title: string;
+  normalizedTitle: string;
+  sourceId?: string;
+  sourceName: string;
+  publishedAt: string;
+  discoveredAt: string;
+  hypeScore: number;
+  category: string;
+  viewed: boolean;
+  clusterId?: string;
+}
+
+export interface AutoHuntSettings {
+  enabled: boolean;
+  status: AutoHuntStatus;
+  interval: AutoHuntInterval;
+  categories: string[];
+  customCategory?: string;
+  sources: {
+    rss: boolean;
+    web: boolean;
+    xTrending: boolean;
+  };
+  minimumHype: HypeThresholdOption;
+  notifyOnHighPriority: boolean;
+  lastHuntResult?: AutoHuntResult;
+  lastHuntTimestamp?: string;
+  nextHuntTimestamp?: string;
+}
+
+export const DEFAULT_AUTO_HUNT_SETTINGS: AutoHuntSettings = {
+  enabled: false,
+  status: 'off',
+  interval: '3h',
+  categories: ['Hype / Viral', 'Nasional', 'Internasional', 'Sepakbola', 'Persib'],
+  customCategory: '',
+  sources: {
+    rss: true,
+    web: false,
+    xTrending: false
+  },
+  minimumHype: '70',
+  notifyOnHighPriority: true
+};
+
+export const DEFAULT_NEWS_HUNTER_SETTINGS: NewsHunterSettings = {
+  newsRegionMode: 'auto',
+  manualCountryCode: 'GLOBAL',
+  supplementWithGlobal: true,
+  rewriteLanguage: 'same_as_news',
+  defaultCategory: 'All Categories',
+  discoveryMode: 'rss_web',
+  xTrendingEnabled: false,
+  defaultHypeThreshold: 60,
+  refreshIntervalMinutes: 30,
+  xApiKeyConfigured: false,
+  mediaDownloadLimitMb: 25,
+  mediaFilter: 'all',
+  onlyDownloadableMedia: false
+};
+
+export const DEFAULT_RSS_SOURCES: NewsRssSource[] = [
+  // Persib / Jabar
+  {
+    id: 'src-detikjabar',
+    name: 'detikJabar',
+    url: 'https://rss.detik.com/index.php/detikjabar',
+    category: 'Persib',
+    active: true,
+    priority: 'high'
+  },
+  {
+    id: 'src-tribunjabar',
+    name: 'Tribun Jabar Persib',
+    url: 'https://jabar.tribunnews.com/rss',
+    category: 'Persib',
+    active: true,
+    priority: 'high'
+  },
+  {
+    id: 'src-bolacom-persib',
+    name: 'Bola.com Indonesia',
+    url: 'https://www.bola.com/feed',
+    category: 'Persib',
+    active: true,
+    priority: 'medium'
+  },
+  // Sepakbola
+  {
+    id: 'src-detiksport',
+    name: 'detikSport',
+    url: 'https://rss.detik.com/index.php/sport',
+    category: 'Sepakbola',
+    active: true,
+    priority: 'high'
+  },
+  {
+    id: 'src-bolasport',
+    name: 'BolaSport',
+    url: 'https://www.bolasport.com/rss',
+    category: 'Sepakbola',
+    active: true,
+    priority: 'high'
+  },
+  {
+    id: 'src-bbcsport',
+    name: 'BBC Sport Football',
+    url: 'http://feeds.bbci.co.uk/sport/football/rss.xml',
+    category: 'Sepakbola',
+    active: true,
+    priority: 'medium'
+  },
+  {
+    id: 'src-guardian-sport',
+    name: 'Guardian Football',
+    url: 'https://www.theguardian.com/football/rss',
+    category: 'Sepakbola',
+    active: true,
+    priority: 'medium'
+  },
+  // Nasional
+  {
+    id: 'src-detiknews',
+    name: 'detikNews',
+    url: 'https://rss.detik.com/index.php/detikcom',
+    category: 'Nasional',
+    active: true,
+    priority: 'high'
+  },
+  {
+    id: 'src-cnn-nasional',
+    name: 'CNN Indonesia',
+    url: 'https://www.cnnindonesia.com/nasional/rss',
+    category: 'Nasional',
+    active: true,
+    priority: 'high'
+  },
+  {
+    id: 'src-antara-terkini',
+    name: 'Antara News',
+    url: 'https://www.antaranews.com/rss/terkini.xml',
+    category: 'Nasional',
+    active: true,
+    priority: 'high'
+  },
+  {
+    id: 'src-tempo-nasional',
+    name: 'Tempo Nasional',
+    url: 'https://rss.tempo.co/nasional',
+    category: 'Nasional',
+    active: true,
+    priority: 'medium'
+  },
+  {
+    id: 'src-liputan6',
+    name: 'Liputan6',
+    url: 'https://feed.liputan6.com/rss',
+    category: 'Nasional',
+    active: true,
+    priority: 'medium'
+  },
+  // Hype / Viral
+  {
+    id: 'src-antara-top',
+    name: 'Antara Top News',
+    url: 'https://www.antaranews.com/rss/top-news.xml',
+    category: 'Hype / Viral',
+    active: true,
+    priority: 'high'
+  },
+  // Internasional
+  {
+    id: 'src-bbc-world',
+    name: 'BBC World News',
+    url: 'http://feeds.bbci.co.uk/news/world/rss.xml',
+    category: 'Internasional',
+    active: true,
+    priority: 'high'
+  },
+  {
+    id: 'src-cnn-inter',
+    name: 'CNN Internasional',
+    url: 'https://www.cnnindonesia.com/internasional/rss',
+    category: 'Internasional',
+    active: true,
+    priority: 'medium'
+  },
+  // Teknologi
+  {
+    id: 'src-detikinet',
+    name: 'detikInet',
+    url: 'https://rss.detik.com/index.php/inet',
+    category: 'Teknologi',
+    active: true,
+    priority: 'medium'
+  },
+  {
+    id: 'src-antara-tekno',
+    name: 'Antara Tekno',
+    url: 'https://www.antaranews.com/rss/tekno.xml',
+    category: 'Teknologi',
+    active: true,
+    priority: 'medium'
+  }
+];
+
+// ==========================================
+// NAVIGATION TAB TYPE
+// ==========================================
+export type NavigationTab = 'home' | 'news' | 'create' | 'queue' | 'history' | 'settings';
+
+// ==========================================
+// CONTENT QUEUE INTERFACES & TYPES
+// ==========================================
+
+export type QueueItemStatus = 
+  | 'scheduled'   // Awaiting scheduled date/time
+  | 'waiting'     // Waiting for scheduled time
+  | 'ready'       // Ready for manual share
+  | 'completed'   // Successfully completed sharing
+  | 'failed'      // Encountered an issue
+  | 'skipped'     // Skipped by user
+  | 'queued'      // Ready in pipeline for manual cross-posting
+  | 'publishing'  // Currently undergoing cross-post share session
+  | 'published'   // Successfully completed sharing
+  | 'paused';     // Temporarily held back by user
+
+export type QueueItemPriority = 
+  | 'urgent' 
+  | 'high' 
+  | 'medium' 
+  | 'low';
+
+export interface ContentQueueMetadata {
+  category?: string;
+  source?: 'manual' | 'news_hunter' | 'ai_generated' | 'draft' | 'campaign' | string;
+  notes?: string;
+  autoPublish?: boolean;
+  timezone?: string;
+  tags?: string[];
+  retryCount?: number;
+  maxRetries?: number;
+  targetAudience?: string;
+  campaignName?: string;
+  newsSourceTitle?: string;
+  newsSourceUrl?: string;
+  [key: string]: any;
+}
+
+export interface ContentQueueItem {
+  id: string;
+  postId?: string;
+  title: string;
+  caption: string;
+  description?: string;
+  hashtags: string[];
+  callToAction?: string;
+  media?: MediaItem | null;
+  selectedPlatforms: PlatformId[];
+  selectedDestinationIds?: string[];
+  selectedGroupId?: string | null;
+  scheduledAt: string; // ISO 8601 string: YYYY-MM-DDTHH:mm:ss
+  status: QueueItemStatus;
+  priority: QueueItemPriority;
+  createdAt: string;
+  updatedAt: string;
+  lastAttemptAt?: string;
+  errorMessage?: string;
+  metadata?: ContentQueueMetadata;
+  platformOverrides?: Partial<Record<PlatformId, PlatformCustomContent>>;
+  post?: SocialPost;
+}
+
+export const SAMPLE_QUEUE_ITEMS: ContentQueueItem[] = [
+  {
+    id: 'queue-sample-1',
+    postId: 'post-q1',
+    title: 'Weekly Brand & Product Highlights',
+    caption: 'Here are our top highlights and community updates for this week! Save this post for quick reference.',
+    description: 'Complete weekly highlight guide for our community across channels.',
+    hashtags: ['#BrandUpdate', '#Community', '#CreatorTips', '#SocialMedia', '#Highlights'],
+    callToAction: 'Save and share this post with your network!',
+    media: {
+      id: 'media-q1',
+      name: 'Sample Highlight Image.jpg',
+      type: 'image',
+      url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop&q=80',
+      source: 'sample'
+    },
+    selectedPlatforms: ['facebook_page', 'instagram', 'tiktok', 'youtube'],
+    selectedGroupId: null,
+    scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 4).toISOString(),
+    status: 'scheduled',
+    priority: 'high',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      category: 'Brand & Lifestyle',
+      source: 'manual',
+      notes: 'Schedule for midday peak engagement',
+      campaignName: 'Weekly Campaign 2026'
+    }
+  },
+  {
+    id: 'queue-sample-2',
+    postId: 'post-q2',
+    title: 'Breaking News: Matchday & Schedule Update',
+    caption: 'Important update for supporters! Check out the full matchday preparation and kickoff schedule for this weekend.',
+    description: 'Latest training and tactical preparation ahead of the weekend fixture.',
+    hashtags: ['#Football', '#Matchday', '#SportsUpdate', '#Schedule'],
+    selectedPlatforms: ['facebook_page', 'facebook_profile', 'twitter', 'threads'],
+    selectedGroupId: null,
+    scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 18).toISOString(),
+    status: 'queued',
+    priority: 'urgent',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      category: 'Sepakbola',
+      source: 'news_hunter',
+      notes: 'High priority ahead of matchday'
+    }
+  },
+  {
+    id: 'queue-sample-3',
+    postId: 'post-q3',
+    title: 'Behind the Scenes: Daily Creator Workflow Tips',
+    caption: 'Organizing your content calendar and multi-platform captions saves hours every week. Here is our step-by-step workflow!',
+    hashtags: ['#CreatorWorkflow', '#Productivity', '#SocialTips', '#ContentStrategy'],
+    callToAction: 'Share with your fellow creators!',
+    media: {
+      id: 'media-q3',
+      name: 'Creator Workflow.jpg',
+      type: 'image',
+      url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
+      source: 'sample'
+    },
+    selectedPlatforms: ['facebook_page', 'instagram', 'tiktok'],
+    selectedGroupId: null,
+    scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 36).toISOString(),
+    status: 'scheduled',
+    priority: 'medium',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      category: 'Tips & Tutorial',
+      source: 'manual',
+      campaignName: 'Creator Education'
+    }
+  },
+  {
+    id: 'queue-sample-4',
+    postId: 'post-q4',
+    title: 'Highlight Gol Spektakuler & Analisis Taktik',
+    caption: 'Koleksi gol tendangan bebas dan kombinasi operan satu-dua terbaik pekan ini. Siapa pemain terbaik menurut kalian?',
+    hashtags: ['#GolTerbaik', '#HighlightBola', '#TaktikSepakbola'],
+    selectedPlatforms: ['instagram', 'tiktok', 'youtube'],
+    scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 72).toISOString(),
+    status: 'scheduled',
+    priority: 'high',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      category: 'Highlight',
+      source: 'news_hunter'
+    }
+  }
+];
+
+// ==========================================
+// BACKUP & RESTORE / DATA INTEGRITY TYPES
+// ==========================================
+
+export const DATA_SCHEMA_VERSION = 1;
+export const APP_CURRENT_VERSION = '1.4.0';
+
+export interface BackupData {
+  accounts: UserSocialAccounts;
+  groups: SocialGroup[];
+  drafts: SocialPost[];
+  history: SocialPost[];
+  newsLibrary: SavedNewsItem[];
+  newsHunter: NewsHunterSettings;
+  autoHunt: AutoHuntSettings;
+  newsSources?: NewsRssSource[];
+  queue: ContentQueueItem[];
+  settings: AppSettings;
+  discoveryCache?: any;
+}
+
+export interface BackupFile {
+  backupVersion: number;
+  createdAt: string;
+  appVersion: string;
+  timezone: string;
+  data: BackupData;
+}
+
+export interface RecoverySnapshot {
+  id: string;
+  timestamp: string;
+  label: string;
+  sizeEstimateBytes: number;
+  itemCounts: {
+    accounts: number;
+    groups: number;
+    drafts: number;
+    queue: number;
+    history: number;
+    newsLibrary: number;
+  };
+  backupFile: BackupFile;
+}
+
+export interface DataIntegrityIssue {
+  id: string;
+  type: 'error' | 'warning';
+  category: 'account' | 'group' | 'draft' | 'queue' | 'history' | 'news';
+  title: string;
+  description: string;
+  repairable: boolean;
+  repairAction?: 'regenerate_id' | 'detach_deleted_accounts' | 'mark_missing_media' | 'remove_duplicate_id';
+  details?: any;
+}
+
+export interface DataIntegrityReport {
+  timestamp: string;
+  healthy: number;
+  warnings: number;
+  errors: number;
+  issues: DataIntegrityIssue[];
+}
+
+export interface MergeConflict {
+  id: string;
+  category: 'account' | 'group' | 'draft' | 'queue' | 'history' | 'news';
+  title: string;
+  currentSummary: string;
+  backupSummary: string;
+  currentItem: any;
+  backupItem: any;
+}
+
+
